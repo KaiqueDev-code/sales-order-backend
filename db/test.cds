@@ -10,7 +10,7 @@ entity  SalesOrderHeader: managed {
     key id: UUID;
         customer: Association to Customers;
         totalAmount: Decimal(15,2);
-        itens: Composition of SalesOrderItens on itens.header = $self; // fiquei em duvida do $self
+        itens: Composition of SalesOrderItens on itens.header = $self; // self esta referenciando ao SalesOrderHeader
     
 }
 
