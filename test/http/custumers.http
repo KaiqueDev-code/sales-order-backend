@@ -23,10 +23,3 @@ Content-Type: application/json
 {
     "firstName": "Luiz"
 }
-
-# entity Customers {
-#     key id: UUID;
-#         firstName: String(20);
-#         lastName: String(100);
-#         email: String(255)
-# }

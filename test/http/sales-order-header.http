@@ -1,7 +1,13 @@
 @localhoast = localhost:4004/odata/v4/my
+@id = 521d6814-9a1d-4c23-bfac-314d2d2c0e33
+
+@custumer_Id = a442e095-c55e-4e03-b08b-51f61b2dae84
+
+@products_Id = d4cd2891-a7ff-48d9-b596-89fd3c311007
 
 // E Possivel usar a variavel no crud e me mostra em forma de objeto
-GET http://{{localhoast}}/SalesOrderHeader
+
+GET http://{{localhoast}}/SalesOrderHeader?$expand=itens
 Content-Type: application/json
 
 ###
@@ -9,14 +15,36 @@ Content-Type: application/json
 POST http://localhost:4004/odata/v4/my/SalesOrderHeader
 Content-Type: application/json
 
-{}
+{
+    "id": "{{id}}",
+    "customer_id":"{{custumer_Id}}",
+    "itens": [
+        {
+            "id": "659d284e-a71c-4089-8999-e0197fd3d2a2",
+            "header_id": "{{id}}",
+            "product_id": "{{products_Id}}",
+            "quantiti": 10,
+            "price": 20.99
+        },
+        
+        {
+            "id": "24cd7774-2ea1-4900-b537-6e069ad25225",
+            "header_id": "{{id}}",
+            "product_id": "{{products_Id}}",
+            "quantiti": 4,
+            "price": 15.99
+        }
+        
+    ]
+
+}
 
 ###
-DELETE http://localhost:4004/odata/v4/my/SalesOrderHeader
+DELETE http://localhost:4004/odata/v4/my/SalesOrderHeader(id={{id}})
 Content-Type: application/json
 
 {
-    "id": "123456"
+    "id": "{{id}}"
 }
 
 ###
