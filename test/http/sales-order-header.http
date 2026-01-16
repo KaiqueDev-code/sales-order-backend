@@ -90,3 +90,14 @@ Content-Type: application/json
 GET http://{{localhoast}}/SalesOrderHeader?$select=id,customer&$expand=customer
 Content-Type: application/json
 
+###
+
+// Descobrindo a quantidade de registro 
+GET http://{{localhoast}}/SalesOrderHeader/$count
+Content-Type: application/json
+
+###
+
+// Paginando os registros
+GET http://{{localhoast}}/SalesOrderHeader?$skip=2&$top=3
+Content-Type: application/json
