@@ -1,8 +1,6 @@
 @localhoast = localhost:4004/odata/v4/my
 @id = 521d6814-9a1d-4c23-bfac-314d2d2c0e33
-
 @custumer_Id = a442e095-c55e-4e03-b08b-51f61b2dae84
-
 @products_Id = d4cd2891-a7ff-48d9-b596-89fd3c311007
 
 // E Possivel usar a variavel no crud e me mostra em forma de objeto
@@ -44,20 +42,14 @@ Content-Type: application/json
 POST http://localhost:4004/odata/v4/my/Products
 Content-Type: application/json
 
-#  estou tendo problemas em fazer com que itens seja um array,
-#  esta dando erro pois no db o itens e uma string, se eu mudo no db o codigo deixa de rodar, 
-#  a ia diz que devo mudar algo nos arquivos csv
+#  Estou tendo problemas em fazer com que itens seja um array de objetos,
+#  esta dando erro pois no db o itens e uma string, se eu mudo no db o codigo deixa de rodar,
+#  se mudo no csv continua dando erro, no momento mantive o mais simples possivel e não passei o itens
 
 {
-
     "id": "{{products_Id}}",
-    "itens": [
-        {
-            "nome": "cimento",
-            "price": 50.99
-        }
-    ]
-    
+    "nome": "cimento",
+    "price": 50.99 
 }
 
 ###
@@ -76,5 +68,13 @@ Content-Type: application/json
 
 ###
 
+// filtro que busca totalAmount maior ou igual a 2000000
 GET http://localhost:4004/odata/v4/my/SalesOrderHeader?$filter=totalAmount ge 2000000
 Content-Type: application/json
+
+###
+
+// filtro que busca totalAmount menor ou igual a 2000000
+GET http://localhost:4004/odata/v4/my/SalesOrderHeader?$filter=totalAmount le 2000000
+Content-Type: application/json
+
