@@ -10,7 +10,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:4004/odata/v4/my/SalesOrderHeader
+POST http://{{localhoast}}/SalesOrderHeader
 Content-Type: application/json
 
 {
@@ -39,7 +39,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:4004/odata/v4/my/Products
+POST http://{{localhoast}}/Products
 Content-Type: application/json
 
 #  Estou tendo problemas em fazer com que itens seja um array de objetos,
@@ -54,7 +54,7 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:4004/odata/v4/my/SalesOrderHeader(id={{id}})
+DELETE http://{{localhoast}}/SalesOrderHeader(id={{id}})
 Content-Type: application/json
 
 {
@@ -63,24 +63,30 @@ Content-Type: application/json
 
 ###
 
-PUT http://localhost:4004/odata/v4/my/SalesOrderHeader("id"=c7fd1cd3-bd65-4d27-8ca0-5cbdea4d0ccc")
+PUT http://{{localhoast}}/SalesOrderHeader("id"=c7fd1cd3-bd65-4d27-8ca0-5cbdea4d0ccc")
 Content-Type: application/json
 
 ###
 
 // Filtro que busca totalAmount maior ou igual a 2000000
-GET http://localhost:4004/odata/v4/my/SalesOrderHeader?$filter=totalAmount ge 2000000
+GET http://{{localhoast}}/SalesOrderHeader?$filter=totalAmount ge 2000000
 Content-Type: application/json
 
 ###
 
 // Filtro que busca totalAmount menor ou igual a 2000000
-GET http://localhost:4004/odata/v4/my/SalesOrderHeader?$filter=totalAmount le 2000000
+GET http://{{localhoast}}/SalesOrderHeader?$filter=totalAmount le 2000000
 Content-Type: application/json
 
 ###
 
 // Expandindo itens em SalesOrderHeader, expandindo custumers e expandindo product em itens
-GET http://localhost:4004/odata/v4/my/SalesOrderHeader?$expand=itens($expand=product),customer
+GET http://{{localhoast}}/SalesOrderHeader?$expand=itens($expand=product),customer
+Content-Type: application/json
+
+###
+
+// Selecionando somente o customer e id de SalesOrderHeader, expandindo o customer
+GET http://{{localhoast}}/SalesOrderHeader?$select=id,customer&$expand=customer
 Content-Type: application/json
 
