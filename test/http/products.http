@@ -1,0 +1,18 @@
+@localhoast = localhost:4004/odata/v4/my
+@product_Id = "65ae0aa8-2ebf-4cd5-b9ff-c084760dbfeb"
+
+GET http://{{localhoast}}/SalesOrderHeader
+Content-Type: application/json
+
+###
+
+// POST que adiciona produtos
+POST http://{{localhoast}}/Products
+Content-Type: application/json
+
+{
+    "id": "8d059551-4519-4071-b028-295f64731c15",
+    "nome": "Maca",
+    "price": 3.59
+}
+

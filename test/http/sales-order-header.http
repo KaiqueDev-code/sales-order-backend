@@ -26,7 +26,7 @@ Content-Type: application/json
             "quantiti": 10,
             "price": 20.99
         },
-        
+
         {
             "id": "24cd7774-2ea1-4900-b537-6e069ad25225",
             "header_id": "{{id}}",
@@ -40,6 +40,28 @@ Content-Type: application/json
 }
 
 ###
+
+POST http://localhost:4004/odata/v4/my/Products
+Content-Type: application/json
+
+#  estou tendo problemas em fazer com que itens seja um array,
+#  esta dando erro pois no db o itens e uma string, se eu mudo no db o codigo deixa de rodar, 
+#  a ia diz que devo mudar algo nos arquivos csv
+
+{
+
+    "id": "{{products_Id}}",
+    "itens": [
+        {
+            "nome": "cimento",
+            "price": 50.99
+        }
+    ]
+    
+}
+
+###
+
 DELETE http://localhost:4004/odata/v4/my/SalesOrderHeader(id={{id}})
 Content-Type: application/json
 
@@ -50,4 +72,9 @@ Content-Type: application/json
 ###
 
 PUT http://localhost:4004/odata/v4/my/SalesOrderHeader("id"=c7fd1cd3-bd65-4d27-8ca0-5cbdea4d0ccc")
+Content-Type: application/json
+
+###
+
+GET http://localhost:4004/odata/v4/my/SalesOrderHeader?$filter=totalAmount ge 2000000
 Content-Type: application/json
