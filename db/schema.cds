@@ -10,7 +10,7 @@ entity  SalesOrderHeader: managed {
     key id: UUID;
         customer: Association to Customers;
         totalAmount: Decimal(15,2);
-        itens: Composition of SalesOrderItens on itens.header = $self; // self esta referenciando ao SalesOrderHeader
+        itens: Composition of many SalesOrderItens on itens.header = $self; // self esta referenciando ao SalesOrderHeader
     
 }
 
@@ -19,19 +19,19 @@ entity SalesOrderItens {
         header: Association to SalesOrderHeader;
         product: Association to Products;
         quantiti: Integer;
-        price: Decimal(15,2)
+        price: Decimal(15,2);
 }
 
 entity Products {
     key id: UUID;
         nome: String(255);
-        price: Decimal(15,2)
-        stock: Integer
+        price: Decimal(15,2);
+        stock: Integer;
 }
 
 entity Customers {
     key id: UUID;
         firstName: String(20);
         lastName: String(100);
-        email: String(255)
+        email: String(255);
 }

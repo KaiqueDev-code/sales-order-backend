@@ -1,4 +1,4 @@
-using { sales } from '../db/test';
+using { sales } from '../db/schema';
 
 
 service MyService {
