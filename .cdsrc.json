@@ -6,6 +6,19 @@
                     "database": ":memory:"
                 },
                 "kind":"memory"
+            },
+            "auth": {
+                "kind": "basic",
+                "users":{
+                    "kaique":{
+                        "password": "Kaique@123",
+                        "roles": ["admin"],
+                        "attr":{
+                            "id": 1,
+                            "groups": ["group1", "group2"]
+                        }
+                    }
+                }
             }
         }
     }
