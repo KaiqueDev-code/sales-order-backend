@@ -1,5 +1,7 @@
 import cds, { db, Request, Service } from '@sap/cds';
 import { Customers, Product, Products, SalesOrderHeaders, SalesOrderItem, SalesOrderItems }  from '../@cds-models/sales';
+import { userInfo } from 'node:os';
+import { request } from 'axios';
 const { SELECT } = cds.ql;
 
 // função que apos o "Customers" ser lido e se o "Customer" não tiver @ no email, sera adicionado @gmail.com
@@ -63,13 +65,19 @@ export default (service: Service) => {
         items.forEach(item => {
             totalAmount += (item.price as number) * (item.quantiti as number) 
         })
-        
+        console.log(`Antes do Disconto ${totalAmount.toFixed(2)}`)
+        if(totalAmount > 30000){
+            const discont = totalAmount * (10/100) ;
+            totalAmount = totalAmount - discont;
+        }
+        console.log(`Depois do Disconto ${totalAmount.toFixed(2)}`)
+
         request.data.totalAmount = totalAmount;
         
 
     })
 
-    service.after('CREATE', 'SalesOrderHeaders', async (results: SalesOrderHeaders []) => {
+    service.after('CREATE', 'SalesOrderHeaders', async (results: SalesOrderHeaders [], request : Request) => {
         const headersAsArray = Array.isArray(results) ? results : [results] as SalesOrderHeaders []
         for (const header of headersAsArray) {
             const items = header.items as SalesOrderItems;
@@ -86,6 +94,16 @@ export default (service: Service) => {
                 findproducts.stock = (findproducts.stock as number) - productData.quantity;
                 await cds.update('sales.Products').where({id: findproducts.id}).with({stock: findproducts.stock});
             }
+
+            const headerAsString = JSON.stringify(header);
+            const userAsString = JSON.stringify(request.user);
+            
+            await cds.create('sales.SalesOrderLogs').entries({
+                header_id: header.id,
+                userData: userAsString,
+                orderData: headerAsString
+            })
+
         }
     });
 
