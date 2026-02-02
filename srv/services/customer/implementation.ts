@@ -3,7 +3,7 @@
 
 import { Customers } from "@models/sales";
 import { CustomerService } from "./protocols";
-import { CustomerModel } from "srv/models/customersModel";
+import { CustomerModel } from "srv/models/customers";
 
 // Implementação do serviço de customer que processa listas de customers
 export class CustomerServiceImpl implements CustomerService{
@@ -13,7 +13,7 @@ export class CustomerServiceImpl implements CustomerService{
         // Mapeia cada customer para aplicar transformações através do modelo
         const customers = customerList.map(c => {
             // Cria uma instância do modelo com os dados do customer atual
-            const customer = CustomerModel.create({
+            const customer = CustomerModel.with({
                 id: c.id as string,
                 firstName: c.firstName as string,
                 lastName: c.lastName as string,
