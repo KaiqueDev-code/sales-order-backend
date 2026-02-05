@@ -1,4 +1,7 @@
-import { SalesOrderHeaderModel } from "srv/models/sales-order-header-Model";
+import { User } from "@sap/cds";
+
+import { SalesOrderHeaders } from "@models/sales";
+import { SalesOrderHeaderModel } from "srv/models/sales-order-header";
 
 
 export type CreationPayloadValidationResult = {
@@ -8,5 +11,6 @@ export type CreationPayloadValidationResult = {
 }
 
 export interface SalesOrderHeaderService {
-    beforeCreate(params: SalesOrderHeaderModel): Promise<CreationPayloadValidationResult>
+    beforeCreate(params: SalesOrderHeaderModel): Promise<CreationPayloadValidationResult>;
+    afterCreate(params: SalesOrderHeaders, loggedUser: User): Promise <void>;
 }

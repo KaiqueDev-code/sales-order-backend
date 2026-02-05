@@ -1,13 +1,10 @@
-import { error } from "node:console";
 import { SalesOrdemItemModel } from "./sales-order-items";
-import { ProductRepositoryImpl } from "srv/repositories/products/implementation";
-import { createEntityProxy } from "@models/_";
 
 type SalesOrderHeaderProps = {
     id: string;
     customerId: string;
-    items: SalesOrdemItemModel[];
     totalAmount: number;
+    items: SalesOrdemItemModel[];
 }
 
 type CreationPayload = {
@@ -19,17 +16,23 @@ type CreationPayloadValidationResult = {
     erro?: Error;
 }
 
-type SalesOrderHeaderPropsWithoutTotalAmount = Omit<SalesOrderHeaderProps, 'id' | 'totalAmount' >;
+
+
+type SalesOrderHeaderPropsWithoutIdAndTotalAmount = Omit<SalesOrderHeaderProps, 'id' | 'totalAmount' >;
 
 export class SalesOrderHeaderModel {
     constructor(private props: SalesOrderHeaderProps) {}
 
-    public static create(props: SalesOrderHeaderPropsWithoutTotalAmount): SalesOrderHeaderModel{
+    public static create(props: SalesOrderHeaderPropsWithoutIdAndTotalAmount): SalesOrderHeaderModel{
         return new SalesOrderHeaderModel({
             ...props,
             id: crypto.randomUUID(),
             totalAmount: 0,
         })
+    }
+
+    public static with(props: SalesOrderHeaderProps): SalesOrderHeaderModel {
+        return new SalesOrderHeaderModel(props);
     }
 
     public get totalAmount (){
@@ -129,6 +132,17 @@ export class SalesOrderHeaderModel {
             totalAmount = totalAmount - discont;
         }
         return totalAmount;
+    }
+
+    public getProductsData (): {id: string; quantity: number} []{
+        return this.items.map(item => ({
+            id: item.productId,
+            quantity: item.quantiti
+        }));
+    }
+
+    public toStringifiedObject(): string {
+        return JSON.stringify(this.props);
     }
 
 }
