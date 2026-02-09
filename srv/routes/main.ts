@@ -1,6 +1,6 @@
 // Este arquivo configura os event handlers do serviço CAP.
 // Responsável por processar eventos de leitura e criação de dados.
-import './configs/module-alias';
+import '@/configs/module-alias';
 import { Request, Service } from '@sap/cds';
 
 import { customerController } from '@/factories/controllers/customer';
