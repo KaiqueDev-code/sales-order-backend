@@ -43,7 +43,7 @@ export class CustomerModel {
     // Retorna 'this' para permitir encadeamento (method chaining)
     public SetDefaultEmailDomain(): CustomerModel {
         // Verifica se o email não contém @
-        if (!this.props.email.includes('@')) {
+        if (!this.props.email?.includes('@')) {
             this.props.email = `${this.props.email}@yahoo.com`;
         }
         return this;
