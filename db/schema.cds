@@ -54,4 +54,5 @@ entity Customers {
         firstName: String(20);
         lastName: String(100);
         email: String(255);
+        SalesOrder: Association to many SalesOrderHeaders on SalesOrder.customer = $self;
 }
