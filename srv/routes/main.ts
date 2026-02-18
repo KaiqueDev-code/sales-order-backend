@@ -6,6 +6,7 @@ import { Request, Service } from '@sap/cds';
 import { customerController } from '@/factories/controllers/customer';
 import { salesOrderHeaderController } from '@/factories/controllers/sales-order-header';
 import { Customers, SalesOrderHeaders } from '@models/sales';
+import { salesReportController} from '@/factories/controllers/sales-report'
 
 // Função que configura os event handlers do serviço
 export default (service: Service) => {
@@ -33,5 +34,10 @@ export default (service: Service) => {
     // Processa a ordem criada: atualiza estoque e cria log de auditoria
     service.after('CREATE', 'SalesOrderHeaders', async (SalesOrderHeaders: SalesOrderHeaders, request: Request) => {
         await salesOrderHeaderController.afterCreate(SalesOrderHeaders, request.user);
+    }); 
+
+    service.on('getSalesReportsByDays', (request: Request) => {
+        const days = request.data?.days || 7 ;
+        return salesReportController.findBydays(days)
     });
 };
