@@ -4,16 +4,33 @@ import prettier from 'eslint-plugin-prettier';
 import tseslint from 'typescript-eslint';
 
 export default [
+    // 1. Configuração global de ignores (DEVE estar no nível raiz)
+    {
+        ignores: [
+            'gen/',
+            '@cds-models/',
+            'dist/',
+            'node_modules/',
+            '**/*.js',
+            '!eslint.config.js',
+            '!*.config.js'
+        ]
+    },
+    
+    // 2. Configurações de linguagem globais
     {
         languageOptions: {
             globals: globals.node
         }
     },
+    
+    // 3. Configurações recomendadas
     pluginJs.configs.recommended,
     ...tseslint.configs.recommended,
+    
+    // 4. Configuração específica para SEU CÓDIGO em srv/
     {
-        ignores: ['./gen/*.{js,ts}'],
-        files: ['**/*.{mjs,js,ts}'],
+        files: ['srv/**/*.ts'],
         plugins: {
             prettier
         },

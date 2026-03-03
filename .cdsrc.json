@@ -1,26 +1,31 @@
 {
-    "[development]":{
-        "requires":{
-            "db":{
-                "credentials":{
-                    "database": ":memory:"
-                },
-                "kind":"sql"
+    "[development]": {
+        "requires": {
+            "db": {
+                "kind": "sqlite",
+                "model": "db",
+                "credentials": {
+                    "database": "db.sqlite"
+                }
             },
             "auth": {
                 "kind": "basic",
-                "users":{
-                    "kaique":{
+                "users": {
+                    "kaique": {
                         "password": "Kaique@123",
-                        "roles": ["admin"],
-                        "attr":{
+                        "roles": [
+                            "admin"
+                        ],
+                        "attr": {
                             "id": "1",
                             "groups": "group1,group2"
                         }
                     },
-                    "Kel":{
+                    "Kel": {
                         "password": "Kel@123",
-                        "roles": ["read_only_user"],
+                        "roles": [
+                            "read_only_user"
+                        ],
                         "attr": {
                             "id": "2",
                             "groups": "group1"
@@ -28,6 +33,19 @@
                     }
                 }
             }
+        }
+    },
+    "[production]": {
+        "requires": {
+            "db": {
+                "kind": "hana"
+            },
+            "uaa": {
+                "kind": "xsuaa"
+            }
+        },
+        "hana": {
+            "deploy-format": "hdbtable"
         }
     }
 }
