@@ -1,8 +1,8 @@
-import { SalesReportControllerImpl } from "@/controlles/sales-report/implemantation";
-import { SalesReportController } from "@/controlles/sales-report/protocols";
-import { salesReportService } from "@/factories/service/sales-reports";
+import { SalesReportController } from '@/controllers/sales-report/protocols';
+import { SalesReportControllerImpl } from '@/controllers/sales-report/implemantation';
+import { salesReportService } from '@/factories/service/sales-reports';
 
-const makeSalesReportController = () : SalesReportController => {
+const makeSalesReportController = (): SalesReportController => {
     return new SalesReportControllerImpl(salesReportService);
 };
 
