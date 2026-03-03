@@ -1,4 +1,4 @@
-import { SalesOrderLogsModel } from '@/models/sales-order-logs';
+import { SalesOrderLogsModel } from '@/models-manual';
 
 export interface SalesOrderLogRepository {
     create(logs: SalesOrderLogsModel[]): Promise<void>;

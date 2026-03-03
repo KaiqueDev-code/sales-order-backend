@@ -1,6 +1,6 @@
-import { SalesReportsModel } from "@/models/sales-report";
+import { SalesReportsModel } from '@/models-manual';
 
-export interface SalesReportRepository{
+export interface SalesReportRepository {
     findBydays(days: number): Promise<SalesReportsModel[] | null>;
-    findByCustomer(customerId: string): Promise<SalesReportsModel[] | null>;
-} 
+    findByCustomerId(customerId: string): Promise<SalesReportsModel[] | null>;
+}
