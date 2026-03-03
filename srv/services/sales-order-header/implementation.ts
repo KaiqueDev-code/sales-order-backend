@@ -1,25 +1,30 @@
-import { CustomerModel } from '@/models/customers';
+import { Payload as BulkCreateSalesOrderPayload } from '@models/db/types/BulkCreateSalesOrder';
+import { CustomerModel } from '@/models-manual/customers';
 import { CustomerRepository } from '@/repositories/customer/protocols';
-import { LoggedUserModel } from '@/models/logged-user';
-import { ProductModel } from '@/models/products';
+import { LoggedUserModel } from '@/models-manual/logged-user';
+import { ProductModel } from '@/models-manual/products';
 import { ProductRepository } from '@/repositories/products/protocols';
-import { SalesOrdemItemModel } from '@/models/sales-order-items';
-import { SalesOrderHeaderModel } from '@/models/sales-order-header';
+import { SalesOrdemItemModel } from '@/models-manual/sales-order-items';
+import { SalesOrderHeader } from '@cds-models/sales';
+import { SalesOrderHeaderHepository } from '@/repositories/sales-order-header/protocols';
+import { SalesOrderHeaderModel } from '@/models-manual/sales-order-header';
 import { SalesOrderLogRepository } from '@/repositories/sales-order-log/protocols';
-import { SalesOrderLogsModel } from '@/models/sales-order-logs';
+import { SalesOrderLogsModel } from '@/models-manual/sales-order-logs';
 import { User } from '@sap/cds';
 import { CreationPayloadValidationResult, SalesOrderHeaderService } from '@/services/sales-order-header/protocols';
-import { SalesOrderHeader, SalesOrderHeaders, SalesOrderItem } from '@models/sales';
 
-export class SalesOrderHeaderServiceImpl implements SalesOrderHeaderService { 
+export class SalesOrderHeaderServiceImpl implements SalesOrderHeaderService {
     constructor(
+        private readonly salesOrderHeaderRepository: SalesOrderHeaderHepository,
         private readonly customerRepository: CustomerRepository,
         private readonly ProductRepository: ProductRepository,
         private readonly SalesOrderLogRepository: SalesOrderLogRepository
     ) {}
 
     public async afterCreate(
-        params: SalesOrderHeader | SalesOrderHeader[], loggedUser: User): Promise<void> {
+        params: SalesOrderHeader | BulkCreateSalesOrderPayload[],
+        loggedUser: User
+    ): Promise<void> {
         // Garante que params seja um array
         const headersAsArray = Array.isArray(params) ? params : [params];
 
@@ -44,26 +49,76 @@ export class SalesOrderHeaderServiceImpl implements SalesOrderHeaderService {
         await this.SalesOrderLogRepository.create(logs);
     }
 
+    public async bulkcreate(
+        headers: BulkCreateSalesOrderPayload[],
+        loggedUser: User
+    ): Promise<CreationPayloadValidationResult> {
+        const bulkCreateHeaders: SalesOrderHeaderModel[] = [];
+
+        for (const headerObject of headers) {
+            const productValidation = await this.validateProductsOnCreation(headerObject);
+            if (productValidation.hasError) {
+                return productValidation;
+            }
+            const items = this.getSalesOrderitems(headerObject, productValidation.products as ProductModel[]);
+            const header = this.getSalesOrderHeader(headerObject, items);
+            const customerValidationResult = await this.validationCustomerOnCreation(headerObject);
+            if (!customerValidationResult.hasError) {
+                return customerValidationResult;
+            }
+            const headervalidationResult = header.validateCreationPayload({
+                customer_id: (customerValidationResult.customer as CustomerModel).id
+            });
+
+            if (headervalidationResult.hasError) {
+                return headervalidationResult;
+            }
+            bulkCreateHeaders.push(header);
+        }
+        await this.salesOrderHeaderRepository.bulkCreate(bulkCreateHeaders);
+        await this.afterCreate(headers, loggedUser);
+        return this.serializeBulkCreateResult(bulkCreateHeaders);
+    }
+
+    public async cloneSalesOrder(id: string, loggedUser: User): Promise<CreationPayloadValidationResult> {
+        const header = await this.salesOrderHeaderRepository.findCompletateSalesOrderById(id);
+        if (!header) {
+            return {
+                hasError: true,
+                error: new Error('Pedido não encontrado')
+            };
+        }
+        const headerValidationResult = header.validateCreationPayload({ customer_id: header.customerId });
+        if (headerValidationResult.hasError) {
+            return headerValidationResult;
+        }
+        await this.salesOrderHeaderRepository.bulkCreate([header]);
+        await this.afterCreate([header.toCreationObject()], loggedUser);
+        return this.serializeBulkCreateResult([header]);
+    }
+
+    private serializeBulkCreateResult(headers: SalesOrderHeaderModel[]): CreationPayloadValidationResult {
+        return {
+            hasError: false,
+            headers: headers.map((header) => header.toCreationObject())
+        };
+    }
+
     public async beforeCreate(params: SalesOrderHeader): Promise<CreationPayloadValidationResult> {
-        const products = await this.getProductsByIds(params);
+        const productsValidationResult = await this.validateProductsOnCreation(params);
 
-        if (!products) {
-            return {
-                hasError: true,
-                error: new Error('Produto não encontrado')
-            };
+        if (productsValidationResult.hasError) {
+            return productsValidationResult;
         }
-        const items = this.getSalesOrderitems(params, products);
+        const items = this.getSalesOrderitems(params, productsValidationResult.products as ProductModel[]);
         const header = this.getSalesOrderHeader(params, items);
-        const customer = await this.getCustomerByIds(params);
-        if (!customer) {
-            return {
-                hasError: true,
-                error: new Error('Customer não encontrado')
-            };
+        const customerValidationResult = await this.validationCustomerOnCreation(params);
+        if (customerValidationResult.hasError) {
+            return customerValidationResult;
         }
-        const headervalidationResult = header.validateCreationPayload({ customer_id: customer.id });
-
+        const headervalidationResult = header.validateCreationPayload({
+            customer_id: (customerValidationResult.customer as CustomerModel).id
+        });
         if (headervalidationResult.hasError) {
             return headervalidationResult;
         }
@@ -73,25 +128,67 @@ export class SalesOrderHeaderServiceImpl implements SalesOrderHeaderService {
         };
     }
 
-    private async getProductsByIds(params: SalesOrderHeader): Promise<ProductModel[] | null> {
+    private async validateProductsOnCreation(
+        header: SalesOrderHeader | BulkCreateSalesOrderPayload
+    ): Promise<CreationPayloadValidationResult> {
+        const products = await this.getProductsByIds(header);
+        if (!products) {
+            return {
+                hasError: true,
+                error: new Error('Produto não encontrado')
+            };
+        }
+        return {
+            hasError: false,
+            products
+        };
+    }
+
+    private async validationCustomerOnCreation(
+        header: SalesOrderHeader | BulkCreateSalesOrderPayload
+    ): Promise<CreationPayloadValidationResult> {
+        const customer = await this.getCustomerByIds(header);
+        if (!customer) {
+            return {
+                hasError: true,
+                error: new Error('Customer não encontrado')
+            };
+        }
+        return {
+            hasError: false,
+            customer
+        };
+    }
+
+    private async getProductsByIds(
+        params: SalesOrderHeader | BulkCreateSalesOrderPayload
+    ): Promise<ProductModel[] | null> {
         // Acessa os itens do pedido
-        const productsIds: string[] = params.items?.map((item: SalesOrderItem) => item.product_id || '') || [];
-        return this.ProductRepository.findByIds(productsIds.filter(Boolean)); // Remove valores vazios
+        const productsIds: string[] = params.items?.map((item) => item.product_id) as string[];
+        return this.ProductRepository.findByIds(productsIds); // Remove valores vazios
     }
 
-    private getSalesOrderitems(params: SalesOrderHeader, products: ProductModel[]): SalesOrdemItemModel[] {
+    private getSalesOrderitems(
+        params: SalesOrderHeader | BulkCreateSalesOrderPayload,
+        products: ProductModel[]
+    ): SalesOrdemItemModel[] {
         // Cria os itens do pedido
-        return params.items?.map((item) =>
-            SalesOrdemItemModel.create({
-                price: item.price as number,
-                productId: item.product_id as string,
-                quantity: item.quantity as number,
-                products
-            })
-        ) || [];
+        return (
+            params.items?.map((item) =>
+                SalesOrdemItemModel.create({
+                    price: item.price as number,
+                    productId: item.product_id as string,
+                    quantity: item.quantity as number,
+                    products
+                })
+            ) || []
+        );
     }
 
-    private getSalesOrderHeader(params: SalesOrderHeader, items: SalesOrdemItemModel[]): SalesOrderHeaderModel {
+    private getSalesOrderHeader(
+        params: SalesOrderHeader | BulkCreateSalesOrderPayload,
+        items: SalesOrdemItemModel[]
+    ): SalesOrderHeaderModel {
         return SalesOrderHeaderModel.create({
             customerId: params.customer_id as string,
             items
@@ -99,7 +196,7 @@ export class SalesOrderHeaderServiceImpl implements SalesOrderHeaderService {
     }
 
     private getExistingSalesOrderHeader(
-        params: SalesOrderHeader,
+        params: SalesOrderHeader | BulkCreateSalesOrderPayload,
         items: SalesOrdemItemModel[]
     ): SalesOrderHeaderModel {
         return SalesOrderHeaderModel.with({
@@ -110,7 +207,7 @@ export class SalesOrderHeaderServiceImpl implements SalesOrderHeaderService {
         });
     }
 
-    private getCustomerByIds(params: SalesOrderHeader): Promise<CustomerModel | null> {
+    private getCustomerByIds(params: SalesOrderHeader | BulkCreateSalesOrderPayload): Promise<CustomerModel | null> {
         const customerId = params.customer_id as string;
         return this.customerRepository.findById(customerId);
     }
